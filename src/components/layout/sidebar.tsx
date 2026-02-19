@@ -10,6 +10,10 @@ import {
   Film,
   Library,
   List,
+  Clapperboard,
+  Globe,
+  BookMarked,
+  FileText,
 } from "lucide-react";
 
 const navItems = [
@@ -18,6 +22,7 @@ const navItems = [
     href: "/dashboard",
     icon: Home,
   },
+  // Watch types
   {
     title: "Anime",
     href: "/dashboard/anime",
@@ -29,6 +34,17 @@ const navItems = [
     icon: Film,
   },
   {
+    title: "Aeni",
+    href: "/dashboard/aeni",
+    icon: Clapperboard,
+  },
+  {
+    title: "Western Animation",
+    href: "/dashboard/western-animation",
+    icon: Globe,
+  },
+  // Read types
+  {
     title: "Manga",
     href: "/dashboard/manga",
     icon: BookOpen,
@@ -39,7 +55,17 @@ const navItems = [
     icon: Library,
   },
   {
-    title: "All Media",
+    title: "Manhua",
+    href: "/dashboard/manhua",
+    icon: BookMarked,
+  },
+  {
+    title: "Western Comic",
+    href: "/dashboard/western-comic",
+    icon: FileText,
+  },
+  {
+    title: "All Titles",
     href: "/dashboard/all",
     icon: List,
   },

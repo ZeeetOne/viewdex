@@ -43,7 +43,7 @@ export default async function HomePage() {
             <span className="text-primary">read</span>
           </h1>
           <p className="mt-4 text-lg text-muted-foreground sm:text-xl">
-            Keep track of your anime, manga, manhwa, and donghua progress.
+            Keep track of your anime, donghua, manga, manhwa, and comics.
             Never lose track of where you left off.
           </p>
           <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:justify-center">
@@ -69,7 +69,7 @@ export default async function HomePage() {
       <section className="border-t bg-muted/50 px-4 py-16">
         <div className="container max-w-5xl mx-auto">
           <h2 className="text-center text-2xl font-bold sm:text-3xl">
-            Everything you need to track your media
+            Everything you need to track your favorites
           </h2>
           <div className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
             <FeatureCard
@@ -80,7 +80,7 @@ export default async function HomePage() {
             <FeatureCard
               icon={BookOpen}
               title="Watch & Read"
-              description="Support for anime, donghua, manga, manhwa, and more"
+              description="Support for anime, donghua, manga, manhwa, manhua, comics, and more"
             />
             <FeatureCard
               icon={Star}

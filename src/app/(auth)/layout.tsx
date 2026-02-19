@@ -10,9 +10,8 @@ export default function AuthLayout({
       {/* Header */}
       <header className="border-b">
         <div className="container flex h-14 items-center px-4">
-          <Link href="/" className="flex items-center gap-2 font-bold text-xl">
-            <span className="text-primary">View</span>
-            <span>Dex</span>
+          <Link href="/" className="font-bold text-xl">
+            <span className="text-primary">View</span>Dex
           </Link>
         </div>
       </header>

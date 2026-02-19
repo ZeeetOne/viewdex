@@ -54,7 +54,7 @@ export default async function AdminUsersPage() {
                   <TableHead>Email</TableHead>
                   <TableHead>Role</TableHead>
                   <TableHead>Provider</TableHead>
-                  <TableHead className="text-right">Media</TableHead>
+                  <TableHead className="text-right">Titles</TableHead>
                   <TableHead>Joined</TableHead>
                 </TableRow>
               </TableHeader>

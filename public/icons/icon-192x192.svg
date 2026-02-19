@@ -1,4 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 192 192">
-  <rect width="192" height="192" fill="#7c3aed" rx="32"/>
-  <text x="96" y="120" text-anchor="middle" font-family="Arial, sans-serif" font-size="72" font-weight="bold" fill="white">VD</text>
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#7c3aed"/>
+      <stop offset="100%" style="stop-color:#5b21b6"/>
+    </linearGradient>
+  </defs>
+  <rect width="192" height="192" fill="url(#bg)" rx="40"/>
+  <!-- Stylized V with subtle play triangle -->
+  <path d="M48 48 L96 144 L144 48" stroke="white" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <!-- Small bookmark/page indicator -->
+  <path d="M116 60 L116 90 L128 80 L140 90 L140 60 Z" fill="rgba(255,255,255,0.6)"/>
 </svg>

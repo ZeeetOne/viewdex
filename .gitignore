@@ -47,3 +47,6 @@ public/workbox-*.js.map
 next-env.d.ts
 
 /src/generated/prisma
+
+# playwright
+.playwright-mcp/

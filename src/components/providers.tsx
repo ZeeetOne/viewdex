@@ -2,7 +2,8 @@
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "next-themes";
-import { useState } from "react";
+import { useState, Suspense } from "react";
+import { LoadingBar } from "@/components/ui/loading-bar";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
@@ -25,6 +26,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
         enableSystem
         disableTransitionOnChange
       >
+        <Suspense fallback={null}>
+          <LoadingBar />
+        </Suspense>
         {children}
       </ThemeProvider>
     </QueryClientProvider>

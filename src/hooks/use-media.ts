@@ -71,7 +71,7 @@ export function useCreateMedia() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["media"] });
-      toast.success("Media added successfully!");
+      toast.success("Title added successfully!");
     },
     onError: (error: Error) => {
       toast.error(error.message);
@@ -105,7 +105,7 @@ export function useUpdateMedia() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["media"] });
-      toast.success("Media updated!");
+      toast.success("Title updated!");
     },
     onError: (error: Error) => {
       toast.error(error.message);
@@ -165,7 +165,7 @@ export function useDeleteMedia() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["media"] });
-      toast.success("Media deleted");
+      toast.success("Title deleted");
     },
     onError: (error: Error) => {
       toast.error(error.message);

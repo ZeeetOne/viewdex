@@ -59,11 +59,18 @@ model MediaItem {
 }
 
 enum MediaType {
-  ANIME // Watch (episodes)
-  DONGHUA // Watch (episodes)
-  MANGA // Read (chapters)
-  MANHWA // Read (chapters)
-  OTHER // Custom
+  // Watch (episodes)
+  ANIME
+  DONGHUA
+  AENI
+  WESTERN_ANIMATION
+  // Read (chapters)
+  MANGA
+  MANHWA
+  MANHUA
+  WESTERN_COMIC
+  // Custom
+  OTHER
 }
 
 enum TrackStatus {

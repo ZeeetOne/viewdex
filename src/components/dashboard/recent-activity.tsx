@@ -72,7 +72,7 @@ export function RecentActivity() {
           ) : (
             <div className="py-8 text-center text-muted-foreground">
               <p>No recent activity</p>
-              <p className="text-sm">Add some media to get started!</p>
+              <p className="text-sm">Add your first title to get started!</p>
             </div>
           )}
         </CardContent>

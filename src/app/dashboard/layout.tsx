@@ -43,7 +43,7 @@ export default async function DashboardLayout({
       <div className="flex flex-1">
         <Sidebar />
         <main className="flex-1 overflow-auto pb-20 md:pb-0">
-          <div className="container p-4 md:p-6">{children}</div>
+          <div className="p-4 md:p-6 max-w-7xl">{children}</div>
         </main>
       </div>
       <BottomNav />

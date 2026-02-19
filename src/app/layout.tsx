@@ -16,11 +16,11 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "ViewDex - Track Your Media",
+    default: "ViewDex - Track What You Watch & Read",
     template: "%s | ViewDex",
   },
   description:
-    "Track your anime, manga, manhwa, and donghua progress. Keep notes, rate your favorites, and never lose track of what you're watching or reading.",
+    "Track your anime, donghua, manga, manhwa, and comics. Keep notes, rate your favorites, and never lose track of what you're watching or reading.",
   keywords: ["anime", "manga", "manhwa", "donghua", "tracker", "watchlist"],
   authors: [{ name: "ViewDex" }],
   creator: "ViewDex",
@@ -28,15 +28,15 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     siteName: "ViewDex",
-    title: "ViewDex - Track Your Media",
+    title: "ViewDex - Track What You Watch & Read",
     description:
-      "Track your anime, manga, manhwa, and donghua progress. Keep notes, rate your favorites, and never lose track.",
+      "Track your anime, donghua, manga, manhwa, and comics. Keep notes, rate your favorites, and never lose track.",
   },
   twitter: {
     card: "summary_large_image",
-    title: "ViewDex - Track Your Media",
+    title: "ViewDex - Track What You Watch & Read",
     description:
-      "Track your anime, manga, manhwa, and donghua progress.",
+      "Track your anime, donghua, manga, manhwa, and comics.",
   },
   appleWebApp: {
     capable: true,

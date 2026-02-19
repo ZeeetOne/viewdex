@@ -1,7 +1,7 @@
 import { MediaType, TrackStatus } from "@prisma/client";
 
-const WATCH_TYPES: MediaType[] = ["ANIME", "DONGHUA"];
-const READ_TYPES: MediaType[] = ["MANGA", "MANHWA"];
+const WATCH_TYPES: MediaType[] = ["ANIME", "DONGHUA", "AENI", "WESTERN_ANIMATION"];
+const READ_TYPES: MediaType[] = ["MANGA", "MANHWA", "MANHUA", "WESTERN_COMIC"];
 
 export function isWatchType(type: MediaType): boolean {
   return WATCH_TYPES.includes(type);
@@ -49,8 +49,12 @@ export function getMediaTypeLabel(type: MediaType): string {
   const labels: Record<MediaType, string> = {
     ANIME: "Anime",
     DONGHUA: "Donghua",
+    AENI: "Aeni",
+    WESTERN_ANIMATION: "Western Animation",
     MANGA: "Manga",
     MANHWA: "Manhwa",
+    MANHUA: "Manhua",
+    WESTERN_COMIC: "Western Comic",
     OTHER: "Other",
   };
   return labels[type];

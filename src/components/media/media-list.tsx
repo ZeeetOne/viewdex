@@ -43,27 +43,48 @@ const SORT_OPTIONS = [
   { value: "progress", label: "Progress" },
 ];
 
+const TYPE_FILTERS: { value: MediaType | "ALL"; label: string }[] = [
+  { value: "ALL", label: "All Types" },
+  { value: "ANIME", label: "Anime" },
+  { value: "DONGHUA", label: "Donghua" },
+  { value: "AENI", label: "Aeni" },
+  { value: "WESTERN_ANIMATION", label: "Western Animation" },
+  { value: "MANGA", label: "Manga" },
+  { value: "MANHWA", label: "Manhwa" },
+  { value: "MANHUA", label: "Manhua" },
+  { value: "WESTERN_COMIC", label: "Western Comic" },
+];
+
 export function MediaList({ type, types, title }: MediaListProps) {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<TrackStatus | "ALL">("ALL");
+  const [typeFilter, setTypeFilter] = useState<MediaType | "ALL">("ALL");
   const [sortBy, setSortBy] = useState("updatedAt");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [showForm, setShowForm] = useState(false);
   const [editMedia, setEditMedia] = useState<MediaItem | null>(null);
 
+  // Show type filter on pages that show multiple types (not on single-type pages like /anime)
+  const showTypeFilter = !type;
+
+  // Filter type options based on the types prop
+  const availableTypeFilters = types
+    ? TYPE_FILTERS.filter((f) => f.value === "ALL" || types.includes(f.value as MediaType))
+    : TYPE_FILTERS;
+
   // Build filters
   const filters = {
-    type,
+    type: type || (typeFilter !== "ALL" ? typeFilter : undefined),
     status: statusFilter !== "ALL" ? statusFilter : undefined,
     search: search || undefined,
     sortBy,
     sortOrder,
   };
 
-  const { data: allMedia, isLoading } = useMedia(type ? filters : { ...filters });
+  const { data: allMedia, isLoading } = useMedia(filters);
 
-  // If types array is provided, filter client-side
-  const media = types
+  // If types array is provided and no specific type filter selected, filter client-side
+  const media = types && typeFilter === "ALL"
     ? allMedia?.filter((m) => types.includes(m.type))
     : allMedia;
 
@@ -82,10 +103,12 @@ export function MediaList({ type, types, title }: MediaListProps) {
   };
 
   // Get relevant status filters based on type(s)
-  const isWatchSection = type === "ANIME" || type === "DONGHUA" ||
-    (types && types.every(t => ["ANIME", "DONGHUA"].includes(t)));
-  const isReadSection = type === "MANGA" || type === "MANHWA" ||
-    (types && types.every(t => ["MANGA", "MANHWA"].includes(t)));
+  const watchTypes = ["ANIME", "DONGHUA", "AENI", "WESTERN_ANIMATION"];
+  const readTypes = ["MANGA", "MANHWA", "MANHUA", "WESTERN_COMIC"];
+  const isWatchSection = (type && watchTypes.includes(type)) ||
+    (types && types.every(t => watchTypes.includes(t)));
+  const isReadSection = (type && readTypes.includes(type)) ||
+    (types && types.every(t => readTypes.includes(t)));
 
   const relevantFilters = STATUS_FILTERS.filter((f) => {
     if (f.value === "ALL") return true;
@@ -103,7 +126,7 @@ export function MediaList({ type, types, title }: MediaListProps) {
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold">{title || "My Media"}</h1>
+          <h1 className="text-2xl font-bold">{title || "My List"}</h1>
           <p className="text-sm text-muted-foreground">
             {media?.length || 0} items
           </p>
@@ -113,7 +136,7 @@ export function MediaList({ type, types, title }: MediaListProps) {
           className="hidden sm:inline-flex"
         >
           <Plus className="mr-2 h-4 w-4" />
-          Add Media
+          Add Title
         </Button>
       </div>
 
@@ -130,14 +153,14 @@ export function MediaList({ type, types, title }: MediaListProps) {
           />
         </div>
 
-        {/* Status and Sort */}
-        <div className="flex gap-3">
+        {/* Status, Type, and Sort */}
+        <div className="flex flex-wrap gap-3">
           <Select
             value={statusFilter}
             onValueChange={(v) => setStatusFilter(v as TrackStatus | "ALL")}
           >
-            <SelectTrigger className="flex-1 md:w-[180px] md:flex-none">
-              <SelectValue placeholder="Filter by status" />
+            <SelectTrigger className="w-[140px] md:w-[160px]">
+              <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
               {relevantFilters.map((filter) => (
@@ -148,8 +171,26 @@ export function MediaList({ type, types, title }: MediaListProps) {
             </SelectContent>
           </Select>
 
+          {showTypeFilter && (
+            <Select
+              value={typeFilter}
+              onValueChange={(v) => setTypeFilter(v as MediaType | "ALL")}
+            >
+              <SelectTrigger className="w-[140px] md:w-[160px]">
+                <SelectValue placeholder="Type" />
+              </SelectTrigger>
+              <SelectContent>
+                {availableTypeFilters.map((filter) => (
+                  <SelectItem key={filter.value} value={filter.value}>
+                    {filter.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+
           <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger className="flex-1 md:w-[180px] md:flex-none">
+            <SelectTrigger className="w-[140px] md:w-[160px]">
               <SelectValue placeholder="Sort by" />
             </SelectTrigger>
             <SelectContent>
@@ -186,23 +227,23 @@ export function MediaList({ type, types, title }: MediaListProps) {
         </div>
       ) : (
         <div className="flex flex-col items-center justify-center py-12 text-center">
-          {types?.some((t) => ["ANIME", "DONGHUA"].includes(t)) ? (
+          {isWatchSection ? (
             <Tv className="h-12 w-12 text-muted-foreground/50" />
-          ) : types?.some((t) => ["MANGA", "MANHWA"].includes(t)) ? (
+          ) : isReadSection ? (
             <BookOpen className="h-12 w-12 text-muted-foreground/50" />
           ) : (
             <BookOpen className="h-12 w-12 text-muted-foreground/50" />
           )}
-          <h3 className="mt-4 text-lg font-semibold">No media found</h3>
+          <h3 className="mt-4 text-lg font-semibold">No titles found</h3>
           <p className="mt-1 text-sm text-muted-foreground">
             {search
               ? "Try adjusting your search or filters"
-              : "Add some media to get started!"}
+              : "Add your first title to get started!"}
           </p>
           {!search && (
             <Button onClick={() => setShowForm(true)} className="mt-4">
               <Plus className="mr-2 h-4 w-4" />
-              Add Media
+              Add Title
             </Button>
           )}
         </div>

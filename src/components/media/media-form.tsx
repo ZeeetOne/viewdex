@@ -29,6 +29,7 @@ import {
   isWatchType,
 } from "@/lib/media-utils";
 import { CreateMediaInput } from "@/lib/validations";
+import { Loader2 } from "lucide-react";
 
 interface MediaFormProps {
   open: boolean;
@@ -39,8 +40,12 @@ interface MediaFormProps {
 const MEDIA_TYPES: MediaType[] = [
   "ANIME",
   "DONGHUA",
+  "AENI",
+  "WESTERN_ANIMATION",
   "MANGA",
   "MANHWA",
+  "MANHUA",
+  "WESTERN_COMIC",
   "OTHER",
 ];
 
@@ -122,12 +127,12 @@ function MediaFormContent({ editMedia, onOpenChange }: Omit<MediaFormProps, "ope
     <form onSubmit={handleSubmit}>
       <DialogHeader>
         <DialogTitle>
-          {isEditing ? "Edit Media" : "Add New Media"}
+          {isEditing ? "Edit Title" : "Add New Title"}
         </DialogTitle>
         <DialogDescription>
           {isEditing
-            ? "Update the details of your media."
-            : "Add a new anime, manga, or other media to your list."}
+            ? "Update the details of this title."
+            : "Add a new anime, manga, or comic to your list."}
         </DialogDescription>
       </DialogHeader>
 
@@ -299,11 +304,16 @@ function MediaFormContent({ editMedia, onOpenChange }: Omit<MediaFormProps, "ope
           Cancel
         </Button>
         <Button type="submit" disabled={isLoading}>
-          {isLoading
-            ? "Saving..."
-            : isEditing
-              ? "Save Changes"
-              : "Add Media"}
+          {isLoading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Saving...
+            </>
+          ) : isEditing ? (
+            "Save Changes"
+          ) : (
+            "Add"
+          )}
         </Button>
       </DialogFooter>
     </form>

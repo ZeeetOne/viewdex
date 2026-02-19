@@ -2,10 +2,10 @@ import { Metadata } from "next";
 import { MediaList } from "@/components/media/media-list";
 
 export const metadata: Metadata = {
-  title: "All Media",
-  description: "View all your tracked media",
+  title: "All Titles",
+  description: "View all your tracked titles",
 };
 
-export default function AllMediaPage() {
-  return <MediaList title="All Media" />;
+export default function AllTitlesPage() {
+  return <MediaList title="All Titles" />;
 }

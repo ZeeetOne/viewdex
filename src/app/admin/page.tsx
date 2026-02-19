@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import { prisma } from "@/lib/db";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, List, TrendingUp } from "lucide-react";
+import { Users, BookOpen, TrendingUp, List } from "lucide-react";
 import Link from "next/link";
 
 export const metadata: Metadata = {
@@ -60,7 +60,7 @@ export default async function AdminPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              Avg Media/User
+              Avg Titles/User
             </CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
@@ -95,7 +95,7 @@ export default async function AdminPage() {
                   <p className="text-sm text-muted-foreground">{user.email}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm">{user._count.mediaItems} media</p>
+                  <p className="text-sm">{user._count.mediaItems} titles</p>
                   <p className="text-xs text-muted-foreground">
                     Joined {new Date(user.createdAt).toLocaleDateString()}
                   </p>

@@ -23,7 +23,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { MoreVertical, Plus, Pencil, Trash2, Star, Image as ImageIcon } from "lucide-react";
+import { MoreVertical, Plus, Pencil, Trash2, Star, Image as ImageIcon, Loader2 } from "lucide-react";
 import {
   getProgressLabel,
   getStatusLabel,
@@ -166,7 +166,11 @@ export function MediaCard({ media, onEdit }: MediaCardProps) {
                   onClick={handleIncrement}
                   disabled={updateProgress.isPending}
                 >
-                  <Plus className="h-4 w-4" />
+                  {updateProgress.isPending ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Plus className="h-4 w-4" />
+                  )}
                   <span className="sr-only">
                     Add {isWatchType(media.type) ? "episode" : "chapter"}
                   </span>
@@ -180,19 +184,27 @@ export function MediaCard({ media, onEdit }: MediaCardProps) {
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete media?</AlertDialogTitle>
+            <AlertDialogTitle>Delete this title?</AlertDialogTitle>
             <AlertDialogDescription>
               Are you sure you want to delete &quot;{media.title}&quot;? This
               action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={deleteMedia.isPending}>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
+              disabled={deleteMedia.isPending}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              Delete
+              {deleteMedia.isPending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                "Delete"
+              )}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
