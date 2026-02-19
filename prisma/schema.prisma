@@ -1,0 +1,78 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  username  String   @unique
+  name      String?
+  avatarUrl String?
+  role      UserRole @default(USER)
+
+  // OAuth tracking
+  provider String? // 'email' | 'google'
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  mediaItems MediaItem[]
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+model MediaItem {
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Media Info
+  title      String
+  type       MediaType
+  imageUrl   String?
+  totalUnits Int? // episodes for watch, chapters for read (null = ongoing)
+
+  // Tracking
+  status   TrackStatus @default(PLAN_TO_CONSUME)
+  progress Int         @default(0) // current episode/chapter
+  rating   Int? // 1-10, null = not rated
+  notes    String?
+
+  // Timestamps
+  startedAt   DateTime?
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([userId, status])
+  @@index([userId, type])
+}
+
+enum MediaType {
+  ANIME // Watch (episodes)
+  DONGHUA // Watch (episodes)
+  MANGA // Read (chapters)
+  MANHWA // Read (chapters)
+  OTHER // Custom
+}
+
+enum TrackStatus {
+  WATCHING // For anime/donghua
+  READING // For manga/manhwa
+  COMPLETED
+  DROPPED
+  ON_HOLD
+  PLAN_TO_WATCH // For anime/donghua
+  PLAN_TO_READ // For manga/manhwa
+  PLAN_TO_CONSUME // Generic (for OTHER type)
+}

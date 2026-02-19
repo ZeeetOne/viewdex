@@ -1,36 +1,91 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ViewDex
+
+A media tracking web application for tracking your anime, manga, manhwa, and donghua progress. Never lose track of where you left off.
+
+## Features
+
+- **Track Progress** - Keep track of episodes and chapters with a simple +1 button
+- **Watch & Read** - Support for anime, donghua, manga, manhwa, and more
+- **Rate & Review** - Rate your favorites (1-10) and add personal notes
+- **Mobile Ready** - PWA support, installable on your phone
+- **Dark/Light Mode** - Theme toggle with system preference support
+- **User Authentication** - Email/password and Google OAuth
+- **Admin Dashboard** - View all users and stats (admin only)
+
+## Tech Stack
+
+- **Framework**: Next.js 16 (App Router)
+- **Styling**: Tailwind CSS + shadcn/ui
+- **Database**: PostgreSQL (Supabase)
+- **ORM**: Prisma
+- **Authentication**: Supabase Auth
+- **State Management**: TanStack Query
+- **PWA**: @ducanh2912/next-pwa
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- Node.js 18+
+- npm or yarn
+- Supabase account
+
+### Installation
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/yourusername/viewdex.git
+   cd viewdex
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Set up environment variables:
+   ```bash
+   cp .env.example .env
+   ```
+   Fill in your Supabase credentials.
+
+4. Push database schema:
+   ```bash
+   npx prisma db push
+   ```
+
+5. Run the development server:
+   ```bash
+   npm run dev
+   ```
+
+6. Open [http://localhost:3000](http://localhost:3000)
+
+## Environment Variables
+
+```env
+DATABASE_URL="postgresql://..."
+DIRECT_URL="postgresql://..."
+NEXT_PUBLIC_SUPABASE_URL="https://xxx.supabase.co"
+NEXT_PUBLIC_SUPABASE_ANON_KEY="eyJ..."
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Deployment
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Vercel (Recommended)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. Push your code to GitHub
+2. Import your repository in Vercel
+3. Add environment variables
+4. Deploy
 
-## Learn More
+### Supabase Setup
 
-To learn more about Next.js, take a look at the following resources:
+1. Create a new Supabase project
+2. Go to Authentication → Providers → Email to configure email settings
+3. Copy connection strings and API keys to environment variables
+4. Add your production URL to Authentication → URL Configuration
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## License
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+MIT
