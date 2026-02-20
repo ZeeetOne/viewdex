@@ -55,6 +55,7 @@ export function useCreateMedia() {
   const queryClient = useQueryClient();
 
   return useMutation({
+    mutationKey: ["createMedia"],
     mutationFn: async (data: CreateMediaInput): Promise<MediaItem> => {
       const response = await fetch("/api/media", {
         method: "POST",
@@ -83,6 +84,7 @@ export function useUpdateMedia() {
   const queryClient = useQueryClient();
 
   return useMutation({
+    mutationKey: ["updateMedia"],
     mutationFn: async ({
       id,
       data,
@@ -117,6 +119,7 @@ export function useUpdateProgress() {
   const queryClient = useQueryClient();
 
   return useMutation({
+    mutationKey: ["updateProgress"],
     mutationFn: async ({
       id,
       progress,
@@ -124,11 +127,15 @@ export function useUpdateProgress() {
       id: string;
       progress: number;
     }): Promise<MediaItem> => {
-      const response = await fetch(`/api/media/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ progress }),
-      });
+      // Add minimum delay so users can see feedback
+      const [response] = await Promise.all([
+        fetch(`/api/media/${id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ progress }),
+        }),
+        new Promise((resolve) => setTimeout(resolve, 300)),
+      ]);
 
       if (!response.ok) {
         const error = await response.json();
@@ -140,7 +147,9 @@ export function useUpdateProgress() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["media"] });
       if (data.status === "COMPLETED") {
-        toast.success("Completed! Great job!");
+        toast.success("Completed! Great job! 🎉");
+      } else {
+        toast.success(`Progress updated to ${data.progress}!`);
       }
     },
     onError: (error: Error) => {
@@ -153,6 +162,7 @@ export function useDeleteMedia() {
   const queryClient = useQueryClient();
 
   return useMutation({
+    mutationKey: ["deleteMedia"],
     mutationFn: async (id: string): Promise<void> => {
       const response = await fetch(`/api/media/${id}`, {
         method: "DELETE",
