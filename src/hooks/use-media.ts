@@ -36,12 +36,13 @@ export function useMedia(filters?: MediaFilters) {
       }
       return response.json();
     },
+    staleTime: 5000, // Consider data fresh for 5 seconds
   });
 }
 
 export function useMediaItem(id: string) {
   return useQuery({
-    queryKey: ["media", id],
+    queryKey: ["media", "item", id],
     queryFn: async (): Promise<MediaItem> => {
       const response = await fetch(`/api/media/${id}`);
       if (!response.ok) {
@@ -50,6 +51,7 @@ export function useMediaItem(id: string) {
       return response.json();
     },
     enabled: !!id,
+    staleTime: 5000, // Consider data fresh for 5 seconds
   });
 }
 

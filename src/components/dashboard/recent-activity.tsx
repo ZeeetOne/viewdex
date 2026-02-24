@@ -12,16 +12,18 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
 export function RecentActivity() {
-  const { data: media, isLoading } = useMedia({
-    sortBy: "updatedAt",
-    sortOrder: "desc",
-  });
+  // Use same query as StatsCards (no filters) to avoid duplicate API calls
+  const { data: media, isLoading } = useMedia();
   const [showForm, setShowForm] = useState(false);
   const [editMedia, setEditMedia] = useState<MediaItem | null>(null);
   const [showDetail, setShowDetail] = useState(false);
   const [detailMedia, setDetailMedia] = useState<MediaItem | null>(null);
 
-  const recentMedia = media?.slice(0, 6);
+  // Sort by updatedAt client-side and take first 6
+  const recentMedia = media
+    ?.slice()
+    .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+    .slice(0, 6);
 
   const handleEdit = (item: MediaItem) => {
     setEditMedia(item);

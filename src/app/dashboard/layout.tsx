@@ -4,7 +4,6 @@ import { prisma } from "@/lib/db";
 import { Header } from "@/components/layout/header";
 import { Sidebar } from "@/components/layout/sidebar";
 import { BottomNav } from "@/components/layout/bottom-nav";
-import { FABWrapper } from "@/components/layout/fab-wrapper";
 
 export default async function DashboardLayout({
   children,
@@ -47,7 +46,6 @@ export default async function DashboardLayout({
         </main>
       </div>
       <BottomNav />
-      <FABWrapper />
     </div>
   );
 }

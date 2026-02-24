@@ -61,8 +61,8 @@ export function MediaDetailDialog({
   const updateProgress = useUpdateProgress();
   const deleteMedia = useDeleteMedia();
 
-  // Fetch live data to keep dialog updated
-  const { data: liveMedia } = useMediaItem(initialMedia?.id || "");
+  // Only fetch live data when dialog is open
+  const { data: liveMedia } = useMediaItem(open && initialMedia?.id ? initialMedia.id : "");
   const media = liveMedia || initialMedia;
 
   if (!media) return null;
