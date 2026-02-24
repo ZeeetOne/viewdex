@@ -10,7 +10,7 @@ export function StatsCards() {
 
   if (isLoading) {
     return (
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {[...Array(4)].map((_, i) => (
           <Card key={i}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -28,16 +28,9 @@ export function StatsCards() {
 
   const stats = {
     total: media?.length || 0,
-    watching: media?.filter(
-      (m) => m.status === "WATCHING" || m.status === "READING"
-    ).length || 0,
+    watching: media?.filter((m) => m.status === "IN_PROGRESS").length || 0,
     completed: media?.filter((m) => m.status === "COMPLETED").length || 0,
-    planned: media?.filter(
-      (m) =>
-        m.status === "PLAN_TO_WATCH" ||
-        m.status === "PLAN_TO_READ" ||
-        m.status === "PLAN_TO_CONSUME"
-    ).length || 0,
+    planned: media?.filter((m) => m.status === "PLANNED").length || 0,
   };
 
   const statItems = [
@@ -68,7 +61,7 @@ export function StatsCards() {
   ];
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
       {statItems.map((stat) => (
         <Card key={stat.title}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

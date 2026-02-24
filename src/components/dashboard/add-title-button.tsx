@@ -13,7 +13,7 @@ export function AddTitleButton() {
     <>
       <Button onClick={() => setShowForm(true)} className="hidden sm:inline-flex">
         <Plus className="mr-2 h-4 w-4" />
-        Add Title
+        Track New
       </Button>
       <FAB onClick={() => setShowForm(true)} />
       <MediaForm

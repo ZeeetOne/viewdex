@@ -58,7 +58,7 @@ export async function POST(request: Request) {
         id: authData.user.id,
         email,
         username,
-        provider: "email",
+        provider: "EMAIL",
       },
     });
 

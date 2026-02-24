@@ -7,5 +7,5 @@ export const metadata: Metadata = {
 };
 
 export default function ReadPage() {
-  return <MediaList types={["MANGA", "MANHWA", "MANHUA", "WESTERN_COMIC"]} title="Read" />;
+  return <MediaList types={["MANGA", "MANHWA", "MANHUA", "WESTERN_COMIC"]} category="READ" title="Read" />;
 }

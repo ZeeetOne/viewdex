@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MediaCard } from "@/components/media/media-card";
 import { MediaForm } from "@/components/media/media-form";
+import { MediaDetailDialog } from "@/components/media/media-detail-dialog";
 import { useMedia } from "@/hooks/use-media";
 import { MediaItem } from "@prisma/client";
 import { useState } from "react";
@@ -17,6 +18,8 @@ export function RecentActivity() {
   });
   const [showForm, setShowForm] = useState(false);
   const [editMedia, setEditMedia] = useState<MediaItem | null>(null);
+  const [showDetail, setShowDetail] = useState(false);
+  const [detailMedia, setDetailMedia] = useState<MediaItem | null>(null);
 
   const recentMedia = media?.slice(0, 6);
 
@@ -28,6 +31,16 @@ export function RecentActivity() {
   const handleCloseForm = () => {
     setShowForm(false);
     setEditMedia(null);
+  };
+
+  const handleViewDetail = (item: MediaItem) => {
+    setDetailMedia(item);
+    setShowDetail(true);
+  };
+
+  const handleCloseDetail = () => {
+    setShowDetail(false);
+    setDetailMedia(null);
   };
 
   if (isLoading) {
@@ -66,13 +79,13 @@ export function RecentActivity() {
           {recentMedia && recentMedia.length > 0 ? (
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {recentMedia.map((item) => (
-                <MediaCard key={item.id} media={item} onEdit={handleEdit} />
+                <MediaCard key={item.id} media={item} onEdit={handleEdit} onViewDetail={handleViewDetail} />
               ))}
             </div>
           ) : (
             <div className="py-8 text-center text-muted-foreground">
               <p>No recent activity</p>
-              <p className="text-sm">Add your first title to get started!</p>
+              <p className="text-sm">Add your first entry to start tracking!</p>
             </div>
           )}
         </CardContent>
@@ -82,6 +95,13 @@ export function RecentActivity() {
         open={showForm}
         onOpenChange={handleCloseForm}
         editMedia={editMedia}
+      />
+
+      <MediaDetailDialog
+        media={detailMedia}
+        open={showDetail}
+        onOpenChange={handleCloseDetail}
+        onEdit={handleEdit}
       />
     </>
   );

@@ -23,9 +23,9 @@ export default function AuthLayout({
 
       {/* Footer */}
       <footer className="border-t py-4">
-        <div className="container flex justify-center text-sm text-muted-foreground px-4">
-          <p>&copy; {new Date().getFullYear()} ViewDex. All rights reserved.</p>
-        </div>
+        <p className="text-center text-sm text-muted-foreground">
+          &copy; {new Date().getFullYear()} ViewDex. All rights reserved.
+        </p>
       </footer>
     </div>
   );

@@ -7,5 +7,5 @@ export const metadata: Metadata = {
 };
 
 export default function WatchPage() {
-  return <MediaList types={["ANIME", "DONGHUA", "AENI", "WESTERN_ANIMATION"]} title="Watch" />;
+  return <MediaList types={["ANIME", "DONGHUA", "AENI", "WESTERN_ANIMATION"]} category="WATCH" title="Watch" />;
 }

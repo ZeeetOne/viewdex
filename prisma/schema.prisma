@@ -17,7 +17,10 @@ model User {
   role      UserRole @default(USER)
 
   // OAuth tracking
-  provider String? // 'email' | 'google'
+  provider AuthProvider @default(EMAIL)
+
+  // Track username changes (30-day cooldown)
+  usernameChangedAt DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -30,6 +33,11 @@ enum UserRole {
   ADMIN
 }
 
+enum AuthProvider {
+  EMAIL
+  GOOGLE
+}
+
 model MediaItem {
   id     String @id @default(uuid())
   userId String
@@ -38,11 +46,12 @@ model MediaItem {
   // Media Info
   title      String
   type       MediaType
+  category   MediaCategory
   imageUrl   String?
   totalUnits Int? // episodes for watch, chapters for read (null = ongoing)
 
   // Tracking
-  status   TrackStatus @default(PLAN_TO_CONSUME)
+  status   TrackStatus @default(PLANNED)
   progress Int         @default(0) // current episode/chapter
   rating   Int? // 1-10, null = not rated
   notes    String?
@@ -56,6 +65,12 @@ model MediaItem {
   @@index([userId])
   @@index([userId, status])
   @@index([userId, type])
+  @@index([userId, category])
+}
+
+enum MediaCategory {
+  WATCH
+  READ
 }
 
 enum MediaType {
@@ -74,12 +89,9 @@ enum MediaType {
 }
 
 enum TrackStatus {
-  WATCHING // For anime/donghua
-  READING // For manga/manhwa
+  IN_PROGRESS
   COMPLETED
-  DROPPED
   ON_HOLD
-  PLAN_TO_WATCH // For anime/donghua
-  PLAN_TO_READ // For manga/manhwa
-  PLAN_TO_CONSUME // Generic (for OTHER type)
+  DROPPED
+  PLANNED
 }

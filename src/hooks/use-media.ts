@@ -1,12 +1,13 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { MediaItem, MediaType, TrackStatus } from "@prisma/client";
+import { MediaItem, MediaType, MediaCategory, TrackStatus } from "@prisma/client";
 import { toast } from "sonner";
 import { CreateMediaInput, UpdateMediaInput } from "@/lib/validations";
 
 interface MediaFilters {
   type?: MediaType;
+  category?: MediaCategory;
   status?: TrackStatus;
   search?: string;
   sortBy?: string;
@@ -17,6 +18,7 @@ export function useMedia(filters?: MediaFilters) {
   const queryParams = new URLSearchParams();
 
   if (filters?.type) queryParams.set("type", filters.type);
+  if (filters?.category) queryParams.set("category", filters.category);
   if (filters?.status) queryParams.set("status", filters.status);
   if (filters?.search) queryParams.set("search", filters.search);
   if (filters?.sortBy) queryParams.set("sortBy", filters.sortBy);
@@ -72,7 +74,7 @@ export function useCreateMedia() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["media"] });
-      toast.success("Title added successfully!");
+      toast.success("Added to tracking!");
     },
     onError: (error: Error) => {
       toast.error(error.message);
@@ -91,7 +93,7 @@ export function useUpdateMedia() {
     }: {
       id: string;
       data: UpdateMediaInput;
-    }): Promise<MediaItem> => {
+    }): Promise<{ item: MediaItem; updatedFields: string[] }> => {
       const response = await fetch(`/api/media/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -103,11 +105,27 @@ export function useUpdateMedia() {
         throw new Error(error.error || "Failed to update media");
       }
 
-      return response.json();
+      const item = await response.json();
+      const updatedFields = Object.keys(data);
+      return { item, updatedFields };
     },
-    onSuccess: () => {
+    onSuccess: ({ item, updatedFields }) => {
       queryClient.invalidateQueries({ queryKey: ["media"] });
-      toast.success("Title updated!");
+      if (updatedFields.length === 1) {
+        const fieldLabels: Record<string, string> = {
+          title: "Title",
+          status: "Status",
+          rating: "Rating",
+          notes: "Notes",
+          totalUnits: "Total episodes",
+          imageUrl: "Image",
+          type: "Type",
+        };
+        const fieldName = fieldLabels[updatedFields[0]] || updatedFields[0];
+        toast.success(`${fieldName} on "${item.title}" updated`);
+      } else {
+        toast.success(`"${item.title}" updated`);
+      }
     },
     onError: (error: Error) => {
       toast.error(error.message);
@@ -147,9 +165,9 @@ export function useUpdateProgress() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["media"] });
       if (data.status === "COMPLETED") {
-        toast.success("Completed! Great job! 🎉");
+        toast.success(`"${data.title}" completed! Great job!`);
       } else {
-        toast.success(`Progress updated to ${data.progress}!`);
+        toast.success(`Progress on "${data.title}" updated to ${data.progress}`);
       }
     },
     onError: (error: Error) => {
@@ -163,7 +181,7 @@ export function useDeleteMedia() {
 
   return useMutation({
     mutationKey: ["deleteMedia"],
-    mutationFn: async (id: string): Promise<void> => {
+    mutationFn: async ({ id, title }: { id: string; title: string }): Promise<string> => {
       const response = await fetch(`/api/media/${id}`, {
         method: "DELETE",
       });
@@ -172,10 +190,11 @@ export function useDeleteMedia() {
         const error = await response.json();
         throw new Error(error.error || "Failed to delete media");
       }
+      return title;
     },
-    onSuccess: () => {
+    onSuccess: (title) => {
       queryClient.invalidateQueries({ queryKey: ["media"] });
-      toast.success("Title deleted");
+      toast.success(`"${title}" removed from tracking`);
     },
     onError: (error: Error) => {
       toast.error(error.message);

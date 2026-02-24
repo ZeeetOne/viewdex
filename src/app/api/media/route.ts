@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/db";
 import { createMediaSchema } from "@/lib/validations";
 import { NextResponse } from "next/server";
-import { MediaType, TrackStatus } from "@prisma/client";
+import { MediaType, MediaCategory, TrackStatus } from "@prisma/client";
 
 export async function GET(request: Request) {
   try {
@@ -17,6 +17,7 @@ export async function GET(request: Request) {
 
     const { searchParams } = new URL(request.url);
     const type = searchParams.get("type") as MediaType | null;
+    const category = searchParams.get("category") as MediaCategory | null;
     const status = searchParams.get("status") as TrackStatus | null;
     const search = searchParams.get("search");
     const sortBy = searchParams.get("sortBy") || "updatedAt";
@@ -28,6 +29,10 @@ export async function GET(request: Request) {
 
     if (type) {
       where.type = type;
+    }
+
+    if (category) {
+      where.category = category;
     }
 
     if (status) {
@@ -77,17 +82,14 @@ export async function POST(request: Request) {
         userId: user.id,
         title: validatedData.title,
         type: validatedData.type,
+        category: validatedData.category,
         imageUrl: validatedData.imageUrl || null,
         totalUnits: validatedData.totalUnits,
         status: validatedData.status,
         progress: validatedData.progress,
         rating: validatedData.rating,
         notes: validatedData.notes,
-        startedAt:
-          validatedData.status === "WATCHING" ||
-          validatedData.status === "READING"
-            ? new Date()
-            : null,
+        startedAt: validatedData.status === "IN_PROGRESS" ? new Date() : null,
       },
     });
 

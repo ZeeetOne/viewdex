@@ -39,9 +39,10 @@ import { cn } from "@/lib/utils";
 interface MediaCardProps {
   media: MediaItem;
   onEdit?: (media: MediaItem) => void;
+  onViewDetail?: (media: MediaItem) => void;
 }
 
-export function MediaCard({ media, onEdit }: MediaCardProps) {
+export function MediaCard({ media, onEdit, onViewDetail }: MediaCardProps) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const updateProgress = useUpdateProgress();
   const deleteMedia = useDeleteMedia();
@@ -62,73 +63,79 @@ export function MediaCard({ media, onEdit }: MediaCardProps) {
   };
 
   const handleDelete = () => {
-    deleteMedia.mutate(media.id);
+    deleteMedia.mutate({ id: media.id, title: media.title });
     setShowDeleteDialog(false);
   };
 
   return (
     <>
-      <Card className="overflow-hidden">
+      <Card className="overflow-hidden transition-colors hover:bg-accent/50">
         <CardContent className="p-0">
           <div className="flex gap-3 p-3">
-            {/* Image */}
-            <div className="relative h-24 w-16 flex-shrink-0 overflow-hidden rounded-md bg-muted">
-              {media.imageUrl ? (
-                <Image
-                  src={media.imageUrl}
-                  alt={media.title}
-                  fill
-                  className="object-cover"
-                  unoptimized
-                />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center">
-                  <ImageIcon className="h-6 w-6 text-muted-foreground" />
-                </div>
-              )}
-            </div>
-
-            {/* Content */}
-            <div className="flex flex-1 flex-col justify-between overflow-hidden">
-              <div className="space-y-1">
-                <h3 className="font-medium leading-tight line-clamp-2">
-                  {media.title}
-                </h3>
-                <div className="flex flex-wrap items-center gap-1.5">
-                  <Badge variant="secondary" className="text-xs">
-                    {getMediaTypeLabel(media.type)}
-                  </Badge>
-                  <Badge
-                    variant={isCompleted ? "default" : "outline"}
-                    className={cn(
-                      "text-xs",
-                      isCompleted && "bg-green-500 hover:bg-green-500/80"
-                    )}
-                  >
-                    {getStatusLabel(media.status, media.type)}
-                  </Badge>
-                </div>
+            {/* Clickable Area */}
+            <div
+              className="flex flex-1 gap-3 cursor-pointer"
+              onClick={() => onViewDetail?.(media)}
+            >
+              {/* Image */}
+              <div className="relative h-24 w-16 flex-shrink-0 overflow-hidden rounded-md bg-muted">
+                {media.imageUrl ? (
+                  <Image
+                    src={media.imageUrl}
+                    alt={media.title}
+                    fill
+                    className="object-cover"
+                    unoptimized
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center">
+                    <ImageIcon className="h-6 w-6 text-muted-foreground" />
+                  </div>
+                )}
               </div>
 
-              {/* Progress */}
-              <div className="space-y-1">
-                <div className="flex items-center justify-between text-xs text-muted-foreground">
-                  <span>
-                    {progressLabel} {media.progress}
-                    {media.totalUnits ? `/${media.totalUnits}` : ""}
-                  </span>
-                  {media.rating && (
-                    <span className="flex items-center gap-0.5">
-                      <Star className="h-3 w-3 fill-yellow-500 text-yellow-500" />
-                      {media.rating}/10
-                    </span>
-                  )}
+              {/* Content */}
+              <div className="flex flex-1 flex-col justify-between overflow-hidden">
+                <div className="space-y-1">
+                  <h3 className="font-medium leading-tight line-clamp-2">
+                    {media.title}
+                  </h3>
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <Badge variant="secondary" className="text-xs">
+                      {getMediaTypeLabel(media.type)}
+                    </Badge>
+                    <Badge
+                      variant={isCompleted ? "default" : "outline"}
+                      className={cn(
+                        "text-xs",
+                        isCompleted && "bg-green-500 hover:bg-green-500/80"
+                      )}
+                    >
+                      {getStatusLabel(media.status, media.category)}
+                    </Badge>
+                  </div>
                 </div>
-                <div className="flex items-center justify-between gap-2">
-                  <Progress value={progressPercent} className="h-1.5 flex-1" />
-                  <span className="text-[10px] text-muted-foreground shrink-0">
-                    {formatRelativeTime(media.updatedAt)}
-                  </span>
+
+                {/* Progress */}
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <span>
+                      {progressLabel} {media.progress}
+                      {media.totalUnits ? `/${media.totalUnits}` : ""}
+                    </span>
+                    {media.rating && (
+                      <span className="flex items-center gap-0.5">
+                        <Star className="h-3 w-3 fill-yellow-500 text-yellow-500" />
+                        {media.rating}/10
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center justify-between gap-2">
+                    <Progress value={progressPercent} className="h-1.5 flex-1" />
+                    <span className="text-[10px] text-muted-foreground shrink-0">
+                      {formatRelativeTime(media.updatedAt)}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -184,7 +191,7 @@ export function MediaCard({ media, onEdit }: MediaCardProps) {
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete this title?</AlertDialogTitle>
+            <AlertDialogTitle>Delete &quot;{media.title}&quot;?</AlertDialogTitle>
             <AlertDialogDescription>
               Are you sure you want to delete &quot;{media.title}&quot;? This
               action cannot be undone.

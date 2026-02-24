@@ -27,6 +27,7 @@ export default async function SettingsPage() {
       email: true,
       name: true,
       avatarUrl: true,
+      usernameChangedAt: true,
     },
   });
 

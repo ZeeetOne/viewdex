@@ -1,48 +1,82 @@
-import { MediaType, TrackStatus } from "@prisma/client";
+import { MediaType, MediaCategory, TrackStatus } from "@prisma/client";
 
-const WATCH_TYPES: MediaType[] = ["ANIME", "DONGHUA", "AENI", "WESTERN_ANIMATION"];
-const READ_TYPES: MediaType[] = ["MANGA", "MANHWA", "MANHUA", "WESTERN_COMIC"];
+// Type to Category mapping
+const TYPE_CATEGORY_MAP: Record<MediaType, MediaCategory> = {
+  ANIME: "WATCH",
+  DONGHUA: "WATCH",
+  AENI: "WATCH",
+  WESTERN_ANIMATION: "WATCH",
+  MANGA: "READ",
+  MANHWA: "READ",
+  MANHUA: "READ",
+  WESTERN_COMIC: "READ",
+  OTHER: "WATCH", // Default to WATCH for OTHER
+};
+
+// Types by category
+export const WATCH_TYPES: MediaType[] = ["ANIME", "DONGHUA", "AENI", "WESTERN_ANIMATION"];
+export const READ_TYPES: MediaType[] = ["MANGA", "MANHWA", "MANHUA", "WESTERN_COMIC"];
+
+export function getCategoryFromType(type: MediaType): MediaCategory {
+  return TYPE_CATEGORY_MAP[type];
+}
 
 export function isWatchType(type: MediaType): boolean {
-  return WATCH_TYPES.includes(type);
+  return TYPE_CATEGORY_MAP[type] === "WATCH";
 }
 
 export function isReadType(type: MediaType): boolean {
-  return READ_TYPES.includes(type);
+  return TYPE_CATEGORY_MAP[type] === "READ";
 }
 
-export function getProgressLabel(type: MediaType): string {
-  return isWatchType(type) ? "Episode" : "Chapter";
+export function isWatchCategory(category: MediaCategory): boolean {
+  return category === "WATCH";
 }
 
-export function getProgressLabelPlural(type: MediaType): string {
-  return isWatchType(type) ? "Episodes" : "Chapters";
+export function getTypesByCategory(category: MediaCategory): MediaType[] {
+  if (category === "WATCH") return WATCH_TYPES;
+  if (category === "READ") return READ_TYPES;
+  return [...WATCH_TYPES, ...READ_TYPES, "OTHER"];
 }
 
-export function getActiveStatus(type: MediaType): TrackStatus {
-  if (isWatchType(type)) return "WATCHING";
-  if (isReadType(type)) return "READING";
-  return "WATCHING"; // Default for OTHER
+export function getProgressLabel(typeOrCategory: MediaType | MediaCategory): string {
+  if (typeOrCategory === "WATCH" || (typeOrCategory !== "READ" && isWatchType(typeOrCategory as MediaType))) {
+    return "Episode";
+  }
+  return "Chapter";
 }
 
-export function getPlanStatus(type: MediaType): TrackStatus {
-  if (isWatchType(type)) return "PLAN_TO_WATCH";
-  if (isReadType(type)) return "PLAN_TO_READ";
-  return "PLAN_TO_CONSUME";
+export function getProgressLabelPlural(typeOrCategory: MediaType | MediaCategory): string {
+  if (typeOrCategory === "WATCH" || (typeOrCategory !== "READ" && isWatchType(typeOrCategory as MediaType))) {
+    return "Episodes";
+  }
+  return "Chapters";
 }
 
-export function getStatusLabel(status: TrackStatus, type?: MediaType): string {
-  const labels: Record<TrackStatus, string> = {
-    WATCHING: "Watching",
-    READING: "Reading",
-    COMPLETED: "Completed",
-    DROPPED: "Dropped",
-    ON_HOLD: "On Hold",
-    PLAN_TO_WATCH: "Plan to Watch",
-    PLAN_TO_READ: "Plan to Read",
-    PLAN_TO_CONSUME: type ? (isWatchType(type) ? "Plan to Watch" : "Plan to Read") : "Planned",
+export function getStatusLabel(status: TrackStatus, category: MediaCategory): string {
+  const labels: Record<TrackStatus, Record<MediaCategory, string>> = {
+    IN_PROGRESS: {
+      WATCH: "Watching",
+      READ: "Reading",
+    },
+    COMPLETED: {
+      WATCH: "Completed",
+      READ: "Completed",
+    },
+    ON_HOLD: {
+      WATCH: "On Hold",
+      READ: "On Hold",
+    },
+    DROPPED: {
+      WATCH: "Dropped",
+      READ: "Dropped",
+    },
+    PLANNED: {
+      WATCH: "Plan to Watch",
+      READ: "Plan to Read",
+    },
   };
-  return labels[status];
+  return labels[status][category];
 }
 
 export function getMediaTypeLabel(type: MediaType): string {
@@ -60,31 +94,17 @@ export function getMediaTypeLabel(type: MediaType): string {
   return labels[type];
 }
 
-export function getStatusOptions(type: MediaType): { value: TrackStatus; label: string }[] {
-  if (isWatchType(type)) {
-    return [
-      { value: "WATCHING", label: "Watching" },
-      { value: "COMPLETED", label: "Completed" },
-      { value: "ON_HOLD", label: "On Hold" },
-      { value: "DROPPED", label: "Dropped" },
-      { value: "PLAN_TO_WATCH", label: "Plan to Watch" },
-    ];
-  }
-  if (isReadType(type)) {
-    return [
-      { value: "READING", label: "Reading" },
-      { value: "COMPLETED", label: "Completed" },
-      { value: "ON_HOLD", label: "On Hold" },
-      { value: "DROPPED", label: "Dropped" },
-      { value: "PLAN_TO_READ", label: "Plan to Read" },
-    ];
-  }
+export function getCategoryLabel(category: MediaCategory): string {
+  return category === "WATCH" ? "Watch" : "Read";
+}
+
+export function getStatusOptions(category: MediaCategory): { value: TrackStatus; label: string }[] {
   return [
-    { value: "WATCHING", label: "In Progress" },
+    { value: "IN_PROGRESS", label: category === "WATCH" ? "Watching" : "Reading" },
     { value: "COMPLETED", label: "Completed" },
     { value: "ON_HOLD", label: "On Hold" },
     { value: "DROPPED", label: "Dropped" },
-    { value: "PLAN_TO_CONSUME", label: "Planned" },
+    { value: "PLANNED", label: category === "WATCH" ? "Plan to Watch" : "Plan to Read" },
   ];
 }
 

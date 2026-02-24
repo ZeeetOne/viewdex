@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { MediaItem, MediaType, TrackStatus } from "@prisma/client";
+import { MediaItem, MediaType, MediaCategory, TrackStatus } from "@prisma/client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,6 +14,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { MediaCard } from "./media-card";
 import { MediaForm } from "./media-form";
+import { MediaDetailDialog } from "./media-detail-dialog";
 import { FAB } from "@/components/layout/fab";
 import { useMedia } from "@/hooks/use-media";
 import { Search, Plus, ArrowUpDown, BookOpen, Tv } from "lucide-react";
@@ -21,19 +22,9 @@ import { Search, Plus, ArrowUpDown, BookOpen, Tv } from "lucide-react";
 interface MediaListProps {
   type?: MediaType;
   types?: MediaType[];
+  category?: MediaCategory;
   title?: string;
 }
-
-const STATUS_FILTERS: { value: TrackStatus | "ALL"; label: string }[] = [
-  { value: "ALL", label: "All" },
-  { value: "WATCHING", label: "Watching" },
-  { value: "READING", label: "Reading" },
-  { value: "COMPLETED", label: "Completed" },
-  { value: "ON_HOLD", label: "On Hold" },
-  { value: "DROPPED", label: "Dropped" },
-  { value: "PLAN_TO_WATCH", label: "Plan to Watch" },
-  { value: "PLAN_TO_READ", label: "Plan to Read" },
-];
 
 const SORT_OPTIONS = [
   { value: "updatedAt", label: "Recently Updated" },
@@ -55,7 +46,22 @@ const TYPE_FILTERS: { value: MediaType | "ALL"; label: string }[] = [
   { value: "WESTERN_COMIC", label: "Western Comic" },
 ];
 
-export function MediaList({ type, types, title }: MediaListProps) {
+// Status filters with category-aware labels
+function getStatusFilters(category?: MediaCategory): { value: TrackStatus | "ALL"; label: string }[] {
+  const isWatch = category === "WATCH";
+  const isRead = category === "READ";
+
+  return [
+    { value: "ALL", label: "All" },
+    { value: "IN_PROGRESS", label: isWatch ? "Watching" : isRead ? "Reading" : "In Progress" },
+    { value: "COMPLETED", label: "Completed" },
+    { value: "ON_HOLD", label: "On Hold" },
+    { value: "DROPPED", label: "Dropped" },
+    { value: "PLANNED", label: isWatch ? "Plan to Watch" : isRead ? "Plan to Read" : "Planned" },
+  ];
+}
+
+export function MediaList({ type, types, category, title }: MediaListProps) {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<TrackStatus | "ALL">("ALL");
   const [typeFilter, setTypeFilter] = useState<MediaType | "ALL">("ALL");
@@ -63,6 +69,19 @@ export function MediaList({ type, types, title }: MediaListProps) {
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [showForm, setShowForm] = useState(false);
   const [editMedia, setEditMedia] = useState<MediaItem | null>(null);
+  const [showDetail, setShowDetail] = useState(false);
+  const [detailMedia, setDetailMedia] = useState<MediaItem | null>(null);
+
+  // Determine category from props
+  const watchTypes = ["ANIME", "DONGHUA", "AENI", "WESTERN_ANIMATION"];
+  const readTypes = ["MANGA", "MANHWA", "MANHUA", "WESTERN_COMIC"];
+
+  const effectiveCategory: MediaCategory | undefined =
+    category ||
+    (type && watchTypes.includes(type) ? "WATCH" : undefined) ||
+    (type && readTypes.includes(type) ? "READ" : undefined) ||
+    (types && types.every((t) => watchTypes.includes(t)) ? "WATCH" : undefined) ||
+    (types && types.every((t) => readTypes.includes(t)) ? "READ" : undefined);
 
   // Show type filter on pages that show multiple types (not on single-type pages like /anime)
   const showTypeFilter = !type;
@@ -75,6 +94,7 @@ export function MediaList({ type, types, title }: MediaListProps) {
   // Build filters
   const filters = {
     type: type || (typeFilter !== "ALL" ? typeFilter : undefined),
+    category: category,
     status: statusFilter !== "ALL" ? statusFilter : undefined,
     search: search || undefined,
     sortBy,
@@ -84,9 +104,10 @@ export function MediaList({ type, types, title }: MediaListProps) {
   const { data: allMedia, isLoading } = useMedia(filters);
 
   // If types array is provided and no specific type filter selected, filter client-side
-  const media = types && typeFilter === "ALL"
-    ? allMedia?.filter((m) => types.includes(m.type))
-    : allMedia;
+  const media =
+    types && typeFilter === "ALL"
+      ? allMedia?.filter((m) => types.includes(m.type))
+      : allMedia;
 
   const handleEdit = (item: MediaItem) => {
     setEditMedia(item);
@@ -98,28 +119,23 @@ export function MediaList({ type, types, title }: MediaListProps) {
     setEditMedia(null);
   };
 
+  const handleViewDetail = (item: MediaItem) => {
+    setDetailMedia(item);
+    setShowDetail(true);
+  };
+
+  const handleCloseDetail = () => {
+    setShowDetail(false);
+    setDetailMedia(null);
+  };
+
   const toggleSortOrder = () => {
     setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
   };
 
-  // Get relevant status filters based on type(s)
-  const watchTypes = ["ANIME", "DONGHUA", "AENI", "WESTERN_ANIMATION"];
-  const readTypes = ["MANGA", "MANHWA", "MANHUA", "WESTERN_COMIC"];
-  const isWatchSection = (type && watchTypes.includes(type)) ||
-    (types && types.every(t => watchTypes.includes(t)));
-  const isReadSection = (type && readTypes.includes(type)) ||
-    (types && types.every(t => readTypes.includes(t)));
-
-  const relevantFilters = STATUS_FILTERS.filter((f) => {
-    if (f.value === "ALL") return true;
-    if (isWatchSection) {
-      return !["READING", "PLAN_TO_READ"].includes(f.value);
-    }
-    if (isReadSection) {
-      return !["WATCHING", "PLAN_TO_WATCH"].includes(f.value);
-    }
-    return true;
-  });
+  const isWatchSection = effectiveCategory === "WATCH";
+  const isReadSection = effectiveCategory === "READ";
+  const statusFilters = getStatusFilters(effectiveCategory);
 
   return (
     <div className="space-y-4">
@@ -136,7 +152,7 @@ export function MediaList({ type, types, title }: MediaListProps) {
           className="hidden sm:inline-flex"
         >
           <Plus className="mr-2 h-4 w-4" />
-          Add Title
+          Track New
         </Button>
       </div>
 
@@ -163,7 +179,7 @@ export function MediaList({ type, types, title }: MediaListProps) {
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
-              {relevantFilters.map((filter) => (
+              {statusFilters.map((filter) => (
                 <SelectItem key={filter.value} value={filter.value}>
                   {filter.label}
                 </SelectItem>
@@ -222,7 +238,12 @@ export function MediaList({ type, types, title }: MediaListProps) {
       ) : media && media.length > 0 ? (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {media.map((item) => (
-            <MediaCard key={item.id} media={item} onEdit={handleEdit} />
+            <MediaCard
+              key={item.id}
+              media={item}
+              onEdit={handleEdit}
+              onViewDetail={handleViewDetail}
+            />
           ))}
         </div>
       ) : (
@@ -234,16 +255,16 @@ export function MediaList({ type, types, title }: MediaListProps) {
           ) : (
             <BookOpen className="h-12 w-12 text-muted-foreground/50" />
           )}
-          <h3 className="mt-4 text-lg font-semibold">No titles found</h3>
+          <h3 className="mt-4 text-lg font-semibold">No entries found</h3>
           <p className="mt-1 text-sm text-muted-foreground">
             {search
               ? "Try adjusting your search or filters"
-              : "Add your first title to get started!"}
+              : "Add your first entry to get started!"}
           </p>
           {!search && (
             <Button onClick={() => setShowForm(true)} className="mt-4">
               <Plus className="mr-2 h-4 w-4" />
-              Add Title
+              Track New
             </Button>
           )}
         </div>
@@ -257,6 +278,15 @@ export function MediaList({ type, types, title }: MediaListProps) {
         open={showForm}
         onOpenChange={handleCloseForm}
         editMedia={editMedia}
+        filterCategory={effectiveCategory}
+      />
+
+      {/* Media Detail Dialog */}
+      <MediaDetailDialog
+        media={detailMedia}
+        open={showDetail}
+        onOpenChange={handleCloseDetail}
+        onEdit={handleEdit}
       />
     </div>
   );

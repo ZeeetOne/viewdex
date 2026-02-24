@@ -75,8 +75,7 @@ export async function PATCH(
     // Set startedAt when status changes to active
     if (
       validatedData.status &&
-      (validatedData.status === "WATCHING" ||
-        validatedData.status === "READING") &&
+      validatedData.status === "IN_PROGRESS" &&
       !existingMedia.startedAt
     ) {
       updateData.startedAt = new Date();

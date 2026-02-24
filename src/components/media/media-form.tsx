@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { MediaItem, MediaType, TrackStatus } from "@prisma/client";
+import { MediaItem, MediaType, MediaCategory, TrackStatus } from "@prisma/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -25,8 +25,11 @@ import { useCreateMedia, useUpdateMedia } from "@/hooks/use-media";
 import {
   getMediaTypeLabel,
   getStatusOptions,
-  getPlanStatus,
-  isWatchType,
+  getCategoryFromType,
+  getTypesByCategory,
+  isWatchCategory,
+  WATCH_TYPES,
+  READ_TYPES,
 } from "@/lib/media-utils";
 import { CreateMediaInput } from "@/lib/validations";
 import { Loader2 } from "lucide-react";
@@ -35,9 +38,10 @@ interface MediaFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   editMedia?: MediaItem | null;
+  filterCategory?: MediaCategory; // Optional: filter types by category
 }
 
-const MEDIA_TYPES: MediaType[] = [
+const ALL_MEDIA_TYPES: MediaType[] = [
   "ANIME",
   "DONGHUA",
   "AENI",
@@ -49,11 +53,12 @@ const MEDIA_TYPES: MediaType[] = [
   "OTHER",
 ];
 
-function getInitialFormData(editMedia?: MediaItem | null): CreateMediaInput {
+function getInitialFormData(editMedia?: MediaItem | null, filterCategory?: MediaCategory): CreateMediaInput {
   if (editMedia) {
     return {
       title: editMedia.title,
       type: editMedia.type,
+      category: editMedia.category,
       imageUrl: editMedia.imageUrl || "",
       totalUnits: editMedia.totalUnits,
       status: editMedia.status,
@@ -62,39 +67,62 @@ function getInitialFormData(editMedia?: MediaItem | null): CreateMediaInput {
       notes: editMedia.notes || "",
     };
   }
+
+  // Default type based on filter category
+  const defaultType: MediaType = filterCategory === "READ" ? "MANGA" : "ANIME";
+  const defaultCategory: MediaCategory = filterCategory || getCategoryFromType(defaultType);
+
   return {
     title: "",
-    type: "ANIME",
+    type: defaultType,
+    category: defaultCategory,
     imageUrl: "",
     totalUnits: null,
-    status: "PLAN_TO_WATCH",
+    status: "PLANNED",
     progress: 0,
     rating: null,
     notes: "",
   };
 }
 
-function MediaFormContent({ editMedia, onOpenChange }: Omit<MediaFormProps, "open">) {
+function MediaFormContent({
+  editMedia,
+  onOpenChange,
+  filterCategory,
+}: Omit<MediaFormProps, "open">) {
   const createMedia = useCreateMedia();
   const updateMedia = useUpdateMedia();
   const isEditing = !!editMedia;
 
   const [formData, setFormData] = useState<CreateMediaInput>(() =>
-    getInitialFormData(editMedia)
+    getInitialFormData(editMedia, filterCategory)
   );
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // Get available types based on filter
+  const availableTypes = useMemo(() => {
+    if (filterCategory) {
+      return getTypesByCategory(filterCategory);
+    }
+    return ALL_MEDIA_TYPES;
+  }, [filterCategory]);
+
   const handleTypeChange = (value: MediaType) => {
+    const newCategory = getCategoryFromType(value);
     setFormData((prev) => ({
       ...prev,
       type: value,
-      // Update status to appropriate plan status when type changes (only for new media)
-      status: isEditing ? prev.status : getPlanStatus(value),
+      category: newCategory,
+      // Reset status to PLANNED when category changes (only for new media)
+      status: isEditing ? prev.status : "PLANNED",
     }));
   };
 
-  const statusOptions = useMemo(() => getStatusOptions(formData.type), [formData.type]);
+  const statusOptions = useMemo(
+    () => getStatusOptions(formData.category),
+    [formData.category]
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -122,17 +150,18 @@ function MediaFormContent({ editMedia, onOpenChange }: Omit<MediaFormProps, "ope
   };
 
   const isLoading = createMedia.isPending || updateMedia.isPending;
+  const isWatch = isWatchCategory(formData.category);
 
   return (
     <form onSubmit={handleSubmit}>
       <DialogHeader>
         <DialogTitle>
-          {isEditing ? "Edit Title" : "Add New Title"}
+          {isEditing ? "Edit Entry" : "Track New Entry"}
         </DialogTitle>
         <DialogDescription>
           {isEditing
-            ? "Update the details of this title."
-            : "Add a new anime, manga, or comic to your list."}
+            ? "Update the details of this entry."
+            : "Add a new anime, manga, or comic to track."}
         </DialogDescription>
       </DialogHeader>
 
@@ -167,7 +196,7 @@ function MediaFormContent({ editMedia, onOpenChange }: Omit<MediaFormProps, "ope
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {MEDIA_TYPES.map((type) => (
+                {availableTypes.map((type) => (
                   <SelectItem key={type} value={type}>
                     {getMediaTypeLabel(type)}
                   </SelectItem>
@@ -203,7 +232,7 @@ function MediaFormContent({ editMedia, onOpenChange }: Omit<MediaFormProps, "ope
         <div className="grid grid-cols-2 gap-4">
           <div className="grid gap-2">
             <Label htmlFor="progress">
-              {isWatchType(formData.type) ? "Episodes" : "Chapters"} Read
+              {isWatch ? "Episodes" : "Chapters"} Watched/Read
             </Label>
             <Input
               id="progress"
@@ -222,7 +251,7 @@ function MediaFormContent({ editMedia, onOpenChange }: Omit<MediaFormProps, "ope
 
           <div className="grid gap-2">
             <Label htmlFor="totalUnits">
-              Total {isWatchType(formData.type) ? "Episodes" : "Chapters"}
+              Total {isWatch ? "Episodes" : "Chapters"}
             </Label>
             <Input
               id="totalUnits"
@@ -320,7 +349,7 @@ function MediaFormContent({ editMedia, onOpenChange }: Omit<MediaFormProps, "ope
   );
 }
 
-export function MediaForm({ open, onOpenChange, editMedia }: MediaFormProps) {
+export function MediaForm({ open, onOpenChange, editMedia, filterCategory }: MediaFormProps) {
   // Use key to reset form state when editMedia changes or dialog opens
   const formKey = editMedia?.id ?? "new";
 
@@ -328,9 +357,10 @@ export function MediaForm({ open, onOpenChange, editMedia }: MediaFormProps) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[425px]">
         <MediaFormContent
-          key={`${formKey}-${open}`}
+          key={`${formKey}-${open}-${filterCategory}`}
           editMedia={editMedia}
           onOpenChange={onOpenChange}
+          filterCategory={filterCategory}
         />
       </DialogContent>
     </Dialog>

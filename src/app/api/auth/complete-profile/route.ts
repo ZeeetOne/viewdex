@@ -53,7 +53,7 @@ export async function POST(request: Request) {
         id: userId,
         email,
         username,
-        provider: "google",
+        provider: "GOOGLE",
       },
     });
 
