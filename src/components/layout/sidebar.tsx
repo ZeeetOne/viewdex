@@ -11,9 +11,7 @@ import {
   Library,
   List,
   Clapperboard,
-  Globe,
   BookMarked,
-  FileText,
 } from "lucide-react";
 
 const navItems = [
@@ -34,14 +32,9 @@ const navItems = [
     icon: Film,
   },
   {
-    title: "Aeni",
-    href: "/dashboard/aeni",
+    title: "Movie",
+    href: "/dashboard/movie",
     icon: Clapperboard,
-  },
-  {
-    title: "Western Animation",
-    href: "/dashboard/western-animation",
-    icon: Globe,
   },
   // Read types
   {
@@ -58,11 +51,6 @@ const navItems = [
     title: "Manhua",
     href: "/dashboard/manhua",
     icon: BookMarked,
-  },
-  {
-    title: "Western Comic",
-    href: "/dashboard/western-comic",
-    icon: FileText,
   },
   {
     title: "All Titles",

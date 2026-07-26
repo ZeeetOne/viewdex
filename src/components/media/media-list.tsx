@@ -38,12 +38,10 @@ const TYPE_FILTERS: { value: MediaType | "ALL"; label: string }[] = [
   { value: "ALL", label: "All Types" },
   { value: "ANIME", label: "Anime" },
   { value: "DONGHUA", label: "Donghua" },
-  { value: "AENI", label: "Aeni" },
-  { value: "WESTERN_ANIMATION", label: "Western Animation" },
+  { value: "MOVIE", label: "Movie" },
   { value: "MANGA", label: "Manga" },
   { value: "MANHWA", label: "Manhwa" },
   { value: "MANHUA", label: "Manhua" },
-  { value: "WESTERN_COMIC", label: "Western Comic" },
 ];
 
 // Status filters with category-aware labels
@@ -73,8 +71,8 @@ export function MediaList({ type, types, category, title }: MediaListProps) {
   const [detailMedia, setDetailMedia] = useState<MediaItem | null>(null);
 
   // Determine category from props
-  const watchTypes = ["ANIME", "DONGHUA", "AENI", "WESTERN_ANIMATION"];
-  const readTypes = ["MANGA", "MANHWA", "MANHUA", "WESTERN_COMIC"];
+  const watchTypes = ["ANIME", "DONGHUA", "MOVIE"];
+  const readTypes = ["MANGA", "MANHWA", "MANHUA"];
 
   const effectiveCategory: MediaCategory | undefined =
     category ||
@@ -162,7 +160,7 @@ export function MediaList({ type, types, category, title }: MediaListProps) {
         <div className="relative">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Search..."
+            placeholder="Search title or notes..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9"

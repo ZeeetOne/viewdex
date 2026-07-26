@@ -77,13 +77,11 @@ enum MediaType {
   // Watch (episodes)
   ANIME
   DONGHUA
-  AENI
-  WESTERN_ANIMATION
+  MOVIE
   // Read (chapters)
   MANGA
   MANHWA
   MANHUA
-  WESTERN_COMIC
   // Custom
   OTHER
 }

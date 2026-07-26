@@ -49,7 +49,7 @@ export const completeProfileSchema = z.object({
 // Media validations
 export const createMediaSchema = z.object({
   title: z.string().min(1, "Title is required").max(200, "Title is too long"),
-  type: z.enum(["ANIME", "DONGHUA", "AENI", "WESTERN_ANIMATION", "MANGA", "MANHWA", "MANHUA", "WESTERN_COMIC", "OTHER"]),
+  type: z.enum(["ANIME", "DONGHUA", "MOVIE", "MANGA", "MANHWA", "MANHUA", "OTHER"]),
   category: z.enum(["WATCH", "READ"]),
   imageUrl: z.string().url("Invalid URL").optional().or(z.literal("")),
   totalUnits: z.number().int().positive().optional().nullable(),

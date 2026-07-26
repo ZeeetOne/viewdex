@@ -44,12 +44,10 @@ interface MediaFormProps {
 const ALL_MEDIA_TYPES: MediaType[] = [
   "ANIME",
   "DONGHUA",
-  "AENI",
-  "WESTERN_ANIMATION",
+  "MOVIE",
   "MANGA",
   "MANHWA",
   "MANHUA",
-  "WESTERN_COMIC",
   "OTHER",
 ];
 

@@ -4,18 +4,16 @@ import { MediaType, MediaCategory, TrackStatus } from "@prisma/client";
 const TYPE_CATEGORY_MAP: Record<MediaType, MediaCategory> = {
   ANIME: "WATCH",
   DONGHUA: "WATCH",
-  AENI: "WATCH",
-  WESTERN_ANIMATION: "WATCH",
+  MOVIE: "WATCH",
   MANGA: "READ",
   MANHWA: "READ",
   MANHUA: "READ",
-  WESTERN_COMIC: "READ",
   OTHER: "WATCH", // Default to WATCH for OTHER
 };
 
 // Types by category
-export const WATCH_TYPES: MediaType[] = ["ANIME", "DONGHUA", "AENI", "WESTERN_ANIMATION"];
-export const READ_TYPES: MediaType[] = ["MANGA", "MANHWA", "MANHUA", "WESTERN_COMIC"];
+export const WATCH_TYPES: MediaType[] = ["ANIME", "DONGHUA", "MOVIE"];
+export const READ_TYPES: MediaType[] = ["MANGA", "MANHWA", "MANHUA"];
 
 export function getCategoryFromType(type: MediaType): MediaCategory {
   return TYPE_CATEGORY_MAP[type];
@@ -83,12 +81,10 @@ export function getMediaTypeLabel(type: MediaType): string {
   const labels: Record<MediaType, string> = {
     ANIME: "Anime",
     DONGHUA: "Donghua",
-    AENI: "Aeni",
-    WESTERN_ANIMATION: "Western Animation",
+    MOVIE: "Movie",
     MANGA: "Manga",
     MANHWA: "Manhwa",
     MANHUA: "Manhua",
-    WESTERN_COMIC: "Western Comic",
     OTHER: "Other",
   };
   return labels[type];
