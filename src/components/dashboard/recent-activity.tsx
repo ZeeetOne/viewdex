@@ -2,6 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Input } from "@/components/ui/input";
 import { MediaCard } from "@/components/media/media-card";
 import { MediaForm } from "@/components/media/media-form";
 import { MediaDetailDialog } from "@/components/media/media-detail-dialog";
@@ -9,7 +10,7 @@ import { useMedia } from "@/hooks/use-media";
 import { MediaItem } from "@prisma/client";
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Search, X } from "lucide-react";
 
 export function RecentActivity() {
   // Use same query as StatsCards (no filters) to avoid duplicate API calls
@@ -18,12 +19,23 @@ export function RecentActivity() {
   const [editMedia, setEditMedia] = useState<MediaItem | null>(null);
   const [showDetail, setShowDetail] = useState(false);
   const [detailMedia, setDetailMedia] = useState<MediaItem | null>(null);
+  const [search, setSearch] = useState("");
 
-  // Sort by updatedAt client-side and take first 6
-  const recentMedia = media
+  const query = search.trim().toLowerCase();
+  const isSearching = query.length > 0;
+
+  // Sort by updatedAt client-side; filter the already-loaded list when searching
+  // (no extra API call), otherwise take the first 6
+  const sortedMedia = media
     ?.slice()
-    .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
-    .slice(0, 6);
+    .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+  const recentMedia = isSearching
+    ? sortedMedia?.filter(
+        (item) =>
+          item.title.toLowerCase().includes(query) ||
+          item.notes?.toLowerCase().includes(query)
+      )
+    : sortedMedia?.slice(0, 6);
 
   const handleEdit = (item: MediaItem) => {
     setEditMedia(item);
@@ -65,17 +77,40 @@ export function RecentActivity() {
   return (
     <>
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Recent Activity</CardTitle>
-          {media && media.length > 6 && (
-            <Link
-              href="/dashboard/all"
-              className="text-sm text-muted-foreground hover:text-primary flex items-center gap-1"
-            >
-              View all
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-          )}
+        <CardHeader className="space-y-4">
+          <div className="flex flex-row items-center justify-between">
+            <CardTitle>
+              {isSearching ? `Search Results (${recentMedia?.length ?? 0})` : "Recent Activity"}
+            </CardTitle>
+            {!isSearching && media && media.length > 6 && (
+              <Link
+                href="/dashboard/all"
+                className="text-sm text-muted-foreground hover:text-primary flex items-center gap-1"
+              >
+                View all
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            )}
+          </div>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Search title or notes..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-9 pr-9"
+            />
+            {search && (
+              <button
+                type="button"
+                onClick={() => setSearch("")}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                aria-label="Clear search"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
+          </div>
         </CardHeader>
         <CardContent>
           {recentMedia && recentMedia.length > 0 ? (
@@ -83,6 +118,11 @@ export function RecentActivity() {
               {recentMedia.map((item) => (
                 <MediaCard key={item.id} media={item} onEdit={handleEdit} onViewDetail={handleViewDetail} />
               ))}
+            </div>
+          ) : isSearching ? (
+            <div className="py-8 text-center text-muted-foreground">
+              <p>No entries match &quot;{search.trim()}&quot;</p>
+              <p className="text-sm">Try a different keyword</p>
             </div>
           ) : (
             <div className="py-8 text-center text-muted-foreground">
