@@ -20,8 +20,10 @@ export async function GET(request: Request) {
     const category = searchParams.get("category") as MediaCategory | null;
     const status = searchParams.get("status") as TrackStatus | null;
     const search = searchParams.get("search");
-    const sortBy = searchParams.get("sortBy") || "updatedAt";
-    const sortOrder = searchParams.get("sortOrder") || "desc";
+    const SORTABLE_FIELDS = ["updatedAt", "createdAt", "title", "rating", "progress", "status"];
+    const sortByParam = searchParams.get("sortBy");
+    const sortBy = sortByParam && SORTABLE_FIELDS.includes(sortByParam) ? sortByParam : "updatedAt";
+    const sortOrder = searchParams.get("sortOrder") === "asc" ? "asc" : "desc";
 
     const where: Record<string, unknown> = {
       userId: user.id,
@@ -77,6 +79,18 @@ export async function POST(request: Request) {
     const body = await request.json();
     const validatedData = createMediaSchema.parse(body);
 
+    const { totalUnits } = validatedData;
+    let { progress, status } = validatedData;
+    if (totalUnits && progress > totalUnits) {
+      progress = totalUnits;
+    }
+    if (totalUnits && status === "COMPLETED") {
+      progress = totalUnits;
+    } else if (totalUnits && progress >= totalUnits && status === "IN_PROGRESS") {
+      status = "COMPLETED";
+    }
+    const now = new Date();
+
     const media = await prisma.mediaItem.create({
       data: {
         userId: user.id,
@@ -84,12 +98,13 @@ export async function POST(request: Request) {
         type: validatedData.type,
         category: validatedData.category,
         imageUrl: validatedData.imageUrl || null,
-        totalUnits: validatedData.totalUnits,
-        status: validatedData.status,
-        progress: validatedData.progress,
+        totalUnits,
+        status,
+        progress,
         rating: validatedData.rating,
         notes: validatedData.notes,
-        startedAt: validatedData.status === "IN_PROGRESS" ? new Date() : null,
+        startedAt: status === "IN_PROGRESS" || status === "COMPLETED" ? now : null,
+        completedAt: status === "COMPLETED" ? now : null,
       },
     });
 

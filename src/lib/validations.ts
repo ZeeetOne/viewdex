@@ -59,7 +59,11 @@ export const createMediaSchema = z.object({
   notes: z.string().max(1000, "Notes are too long").optional(),
 });
 
-export const updateMediaSchema = createMediaSchema.partial();
+// Override progress without .default(0): in Zod 4, .partial() still applies
+// defaults, which would reset progress to 0 on every update that omits it
+export const updateMediaSchema = createMediaSchema
+  .extend({ progress: z.number().int().min(0) })
+  .partial();
 
 export const updateProgressSchema = z.object({
   progress: z.number().int().min(0),

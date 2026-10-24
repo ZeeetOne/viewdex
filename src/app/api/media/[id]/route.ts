@@ -69,34 +69,57 @@ export async function PATCH(
     const body = await request.json();
     const validatedData = updateMediaSchema.parse(body);
 
-    // Handle status-related timestamps
     const updateData: Record<string, unknown> = { ...validatedData };
+    if (validatedData.imageUrl !== undefined) {
+      updateData.imageUrl = validatedData.imageUrl || null;
+    }
 
-    // Set startedAt when status changes to active
-    if (
-      validatedData.status &&
-      validatedData.status === "IN_PROGRESS" &&
-      !existingMedia.startedAt
-    ) {
+    // Resolve the values the item will have after this update, so checks use
+    // the new totalUnits/progress instead of the stale ones in the database
+    const totalUnits =
+      validatedData.totalUnits !== undefined
+        ? validatedData.totalUnits
+        : existingMedia.totalUnits;
+    let progress = validatedData.progress ?? existingMedia.progress;
+    // The edit form always sends status, so only treat it as a user choice
+    // when it actually differs from the current one
+    const statusChanged =
+      validatedData.status !== undefined &&
+      validatedData.status !== existingMedia.status;
+    let status = validatedData.status ?? existingMedia.status;
+
+    if (totalUnits && progress > totalUnits) {
+      progress = totalUnits;
+    }
+
+    if (!statusChanged) {
+      if (totalUnits && progress >= totalUnits) {
+        // Reached the end (e.g. via +1 button)
+        status = "COMPLETED";
+      } else if (status === "COMPLETED" && totalUnits && progress < totalUnits) {
+        // Progress went back or totalUnits grew (new season/chapters)
+        status = "IN_PROGRESS";
+      } else if (status === "PLANNED" && progress > existingMedia.progress) {
+        status = "IN_PROGRESS";
+      }
+    } else if (status === "IN_PROGRESS" && totalUnits && progress >= totalUnits) {
+      status = "COMPLETED";
+    } else if (status === "COMPLETED" && totalUnits) {
+      // Marking as completed fills the progress
+      progress = totalUnits;
+    }
+
+    updateData.progress = progress;
+    updateData.status = status;
+
+    if ((status === "IN_PROGRESS" || status === "COMPLETED") && !existingMedia.startedAt) {
       updateData.startedAt = new Date();
     }
 
-    // Set completedAt when status changes to completed
-    if (validatedData.status === "COMPLETED" && !existingMedia.completedAt) {
+    if (status === "COMPLETED" && existingMedia.status !== "COMPLETED") {
       updateData.completedAt = new Date();
-    }
-
-    // If progress equals totalUnits, auto-complete
-    if (
-      validatedData.progress !== undefined &&
-      existingMedia.totalUnits &&
-      validatedData.progress >= existingMedia.totalUnits
-    ) {
-      updateData.progress = existingMedia.totalUnits;
-      if (!existingMedia.completedAt) {
-        updateData.status = "COMPLETED";
-        updateData.completedAt = new Date();
-      }
+    } else if (status !== "COMPLETED" && existingMedia.completedAt) {
+      updateData.completedAt = null;
     }
 
     const media = await prisma.mediaItem.update({
