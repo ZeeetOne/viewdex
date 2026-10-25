@@ -2,9 +2,13 @@ import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/db";
 import { registerSchema } from "@/lib/validations";
 import { NextResponse } from "next/server";
+import { getClientIp, rateLimit } from "@/lib/rate-limit";
 
 export async function POST(request: Request) {
   try {
+    const limited = await rateLimit("register", getClientIp(request));
+    if (limited) return limited;
+
     const body = await request.json();
     const result = registerSchema.safeParse(body);
     if (!result.success) {

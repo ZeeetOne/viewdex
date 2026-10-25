@@ -1,8 +1,12 @@
 import { prisma } from "@/lib/db";
 import { NextResponse } from "next/server";
+import { getClientIp, rateLimit } from "@/lib/rate-limit";
 
 export async function GET(request: Request) {
   try {
+    const limited = await rateLimit("checkUsername", getClientIp(request));
+    if (limited) return limited;
+
     const { searchParams } = new URL(request.url);
     const username = searchParams.get("username");
 
