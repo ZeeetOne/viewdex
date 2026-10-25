@@ -91,11 +91,7 @@ export function CompleteProfileForm() {
       const response = await fetch("/api/auth/complete-profile", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId: user.id,
-          email: user.email,
-          username,
-        }),
+        body: JSON.stringify({ username }),
       });
 
       const data = await response.json();
