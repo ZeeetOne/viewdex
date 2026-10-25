@@ -5,7 +5,13 @@ import { NextResponse } from "next/server";
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
-  const next = searchParams.get("next") ?? "/dashboard";
+  const nextParam = searchParams.get("next");
+  // Only allow same-origin relative paths; "//host" or "@host" would
+  // otherwise turn `${origin}${next}` into a redirect to another site
+  const next =
+    nextParam && nextParam.startsWith("/") && !nextParam.startsWith("//")
+      ? nextParam
+      : "/dashboard";
 
   if (code) {
     const supabase = await createClient();
