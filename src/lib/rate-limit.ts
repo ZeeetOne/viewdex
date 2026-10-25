@@ -2,14 +2,25 @@ import { Ratelimit, type Duration } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 import { NextResponse } from "next/server";
 
-const redis =
-  process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
-    ? Redis.fromEnv()
-    : null;
+// A misconfigured env (e.g. value pasted with quotes) must not crash the
+// build or the auth routes, so fall back to no rate limiting and log it
+function createRedis() {
+  if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
+    if (process.env.NODE_ENV === "production") {
+      console.warn("UPSTASH_REDIS_REST_URL/TOKEN not set: rate limiting is disabled");
+    }
+    return null;
+  }
 
-if (!redis && process.env.NODE_ENV === "production") {
-  console.warn("UPSTASH_REDIS_REST_URL/TOKEN not set: rate limiting is disabled");
+  try {
+    return Redis.fromEnv();
+  } catch (error) {
+    console.error("Invalid Upstash config, rate limiting is disabled:", error);
+    return null;
+  }
 }
+
+const redis = createRedis();
 
 function createLimiter(prefix: string, tokens: number, window: Duration) {
   if (!redis) return null;
