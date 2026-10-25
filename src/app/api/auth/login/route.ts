@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { syncUserEmail } from "@/lib/user-sync";
 import { loginSchema } from "@/lib/validations";
 import { NextResponse } from "next/server";
+import { getClientIp, rateLimit } from "@/lib/rate-limit";
 
 export async function POST(request: Request) {
   try {
@@ -17,6 +18,13 @@ export async function POST(request: Request) {
     const validatedData = result.data;
 
     const { identifier, password } = validatedData;
+
+    // Per IP + identifier, so one attacker can't lock out a user from elsewhere
+    const limited = await rateLimit(
+      "login",
+      `${getClientIp(request)}:${identifier.toLowerCase()}`
+    );
+    if (limited) return limited;
 
     // Check if identifier is email or username
     const isEmail = identifier.includes("@");
