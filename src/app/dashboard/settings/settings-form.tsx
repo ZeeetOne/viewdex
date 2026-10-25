@@ -204,8 +204,9 @@ export function SettingsForm({ user }: SettingsFormProps) {
         throw new Error(data.error || "Failed to update email");
       }
 
-      toast.success(data.message || "Email updated successfully");
-      router.refresh();
+      toast.success(data.message || "Check your new email to confirm the change");
+      // The current email stays until the change is confirmed
+      setNewEmail(user.email);
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : "Failed to update email"

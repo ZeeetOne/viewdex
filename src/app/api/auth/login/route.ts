@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/db";
+import { syncUserEmail } from "@/lib/user-sync";
 import { loginSchema } from "@/lib/validations";
 import { NextResponse } from "next/server";
 
@@ -51,6 +52,8 @@ export async function POST(request: Request) {
         { status: 401 }
       );
     }
+
+    await syncUserEmail(data.user.id, data.user.email);
 
     return NextResponse.json({
       success: true,

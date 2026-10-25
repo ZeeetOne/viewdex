@@ -76,22 +76,10 @@ export async function PATCH(request: Request) {
       );
     }
 
-    // Update email in our database
-    const updatedUser = await prisma.user.update({
-      where: { id: user.id },
-      data: { email: normalizedEmail },
-      select: {
-        id: true,
-        username: true,
-        email: true,
-        name: true,
-        avatarUrl: true,
-      },
-    });
-
+    // Our database is not updated here: the change only applies once the
+    // user confirms it, and syncUserEmail copies it over after that
     return NextResponse.json({
-      ...updatedUser,
-      message: "Email updated. Please check your new email for verification.",
+      message: "Check your new email to confirm the change.",
     });
   } catch (error) {
     console.error("Error updating email:", error);

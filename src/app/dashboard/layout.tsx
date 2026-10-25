@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/db";
+import { syncUserEmail } from "@/lib/user-sync";
 import { Header } from "@/components/layout/header";
 import { Sidebar } from "@/components/layout/sidebar";
 import { BottomNav } from "@/components/layout/bottom-nav";
@@ -34,6 +35,11 @@ export default async function DashboardLayout({
   if (!user) {
     // User exists in Supabase but not in our DB - redirect to complete profile
     redirect(`/complete-profile?email=${encodeURIComponent(authUser.email || "")}`);
+  }
+
+  if (authUser.email && authUser.email.toLowerCase() !== user.email.toLowerCase()) {
+    await syncUserEmail(user.id, authUser.email);
+    user.email = authUser.email.toLowerCase();
   }
 
   return (
