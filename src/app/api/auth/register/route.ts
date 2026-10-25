@@ -1,6 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
+import { deleteAuthUser } from "@/lib/supabase/admin";
 import { prisma } from "@/lib/db";
 import { registerSchema } from "@/lib/validations";
+import { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { getClientIp, rateLimit } from "@/lib/rate-limit";
 
@@ -63,15 +65,42 @@ export async function POST(request: Request) {
       );
     }
 
-    // Create user in our database
-    await prisma.user.create({
-      data: {
-        id: authData.user.id,
-        email,
-        username,
-        provider: "EMAIL",
-      },
-    });
+    // With email enumeration protection on, signing up an email that already
+    // exists in Supabase returns a placeholder user with no identities instead
+    // of an error. Its id isn't real, so don't create a profile for it.
+    if (authData.user.identities?.length === 0) {
+      return NextResponse.json(
+        { error: "Email already registered. Try logging in." },
+        { status: 400 }
+      );
+    }
+
+    // Create user in our database. If this fails, roll back the auth user so
+    // the account isn't left half-created
+    try {
+      await prisma.user.create({
+        data: {
+          id: authData.user.id,
+          email,
+          username,
+          provider: "EMAIL",
+        },
+      });
+    } catch (error) {
+      await deleteAuthUser(authData.user.id);
+
+      // Lost a race with another signup using the same username/email
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === "P2002"
+      ) {
+        return NextResponse.json(
+          { error: "Username or email already taken." },
+          { status: 400 }
+        );
+      }
+      throw error;
+    }
 
     return NextResponse.json({
       success: true,
