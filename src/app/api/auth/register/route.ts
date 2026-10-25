@@ -6,7 +6,14 @@ import { NextResponse } from "next/server";
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const validatedData = registerSchema.parse(body);
+    const result = registerSchema.safeParse(body);
+    if (!result.success) {
+      return NextResponse.json(
+        { error: result.error.issues[0].message },
+        { status: 400 }
+      );
+    }
+    const validatedData = result.data;
 
     const { username, email, password } = validatedData;
 
@@ -67,9 +74,7 @@ export async function POST(request: Request) {
       message: "Account created successfully",
     });
   } catch (error) {
-    if (error instanceof Error) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
-    }
+    console.error("Register error:", error);
     return NextResponse.json(
       { error: "Something went wrong" },
       { status: 500 }

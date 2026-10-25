@@ -6,7 +6,14 @@ import { NextResponse } from "next/server";
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const validatedData = loginSchema.parse(body);
+    const result = loginSchema.safeParse(body);
+    if (!result.success) {
+      return NextResponse.json(
+        { error: result.error.issues[0].message },
+        { status: 400 }
+      );
+    }
+    const validatedData = result.data;
 
     const { identifier, password } = validatedData;
 
@@ -53,9 +60,7 @@ export async function POST(request: Request) {
       },
     });
   } catch (error) {
-    if (error instanceof Error) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
-    }
+    console.error("Login error:", error);
     return NextResponse.json(
       { error: "Something went wrong" },
       { status: 500 }

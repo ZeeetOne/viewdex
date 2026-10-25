@@ -77,7 +77,14 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const validatedData = createMediaSchema.parse(body);
+    const result = createMediaSchema.safeParse(body);
+    if (!result.success) {
+      return NextResponse.json(
+        { error: result.error.issues[0].message },
+        { status: 400 }
+      );
+    }
+    const validatedData = result.data;
 
     const { totalUnits } = validatedData;
     let { progress, status } = validatedData;
@@ -111,9 +118,6 @@ export async function POST(request: Request) {
     return NextResponse.json(media, { status: 201 });
   } catch (error) {
     console.error("Create media error:", error);
-    if (error instanceof Error) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
-    }
     return NextResponse.json(
       { error: "Failed to create media" },
       { status: 500 }

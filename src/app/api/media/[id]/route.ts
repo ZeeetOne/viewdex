@@ -67,7 +67,14 @@ export async function PATCH(
     }
 
     const body = await request.json();
-    const validatedData = updateMediaSchema.parse(body);
+    const result = updateMediaSchema.safeParse(body);
+    if (!result.success) {
+      return NextResponse.json(
+        { error: result.error.issues[0].message },
+        { status: 400 }
+      );
+    }
+    const validatedData = result.data;
 
     const updateData: Record<string, unknown> = { ...validatedData };
     if (validatedData.imageUrl !== undefined) {
@@ -130,9 +137,6 @@ export async function PATCH(
     return NextResponse.json(media);
   } catch (error) {
     console.error("Update media error:", error);
-    if (error instanceof Error) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
-    }
     return NextResponse.json(
       { error: "Failed to update media" },
       { status: 500 }
